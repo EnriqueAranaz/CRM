@@ -1,12 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Widget Simple</title>
+    <meta charset="UTF-8">
+    <title>Widget Consulta Revista</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10px;
+        }
+        .button {
+            background-color: #2da5e1;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .details-container {
+            margin-top: 15px;
+            display: none;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 12px;
+            background-color: #f9f9f9;
+        }
+        .title {
+            margin-top: 0;
+            color: #333;
+        }
+        .field {
+            margin-bottom: 8px;
+        }
+        .available {
+            color: #2d8a2d;
+            font-weight: bold;
+        }
+        .not-available {
+            color: #d63031;
+        }
+    </style>
 </head>
 <body>
-    <button style="background-color: blue; color: white; padding: 10px 20px; border: none; border-radius: 4px;">
-        Botón de Prueba
-    </button>
-    <p>Si puedes ver este mensaje, el widget está funcionando correctamente.</p>
-</body>
-</html>
+    <button id="checkRevistaBtn" class="button">Consultar disponibilidad</button>
+    
+    <div id="revistaDetails" class="details-container">
+        <h3 class="title">Detalles del número de revista</h3>

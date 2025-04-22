@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <title>Widget Consulta Revista</title>
     <style>
         body {
@@ -54,91 +55,124 @@
     
     <script src="https://live.zwidgets.com/js-sdk/1.1/ZohoEmbededAppSDK.min.js"></script>
     <script>
-        // Inicializar el SDK de Zoho
-        ZOHO.embeddedApp.init().then(function() {
-            // Configurar el botón
-            document.getElementById("checkRevistaBtn").addEventListener("click", checkRevistaDetails);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Para pruebas fuera de Zoho
+            if (typeof ZOHO === 'undefined' || typeof ZOHO.embeddedApp === 'undefined') {
+                document.getElementById('checkRevistaBtn').addEventListener('click', function() {
+                    alert('Este widget está diseñado para funcionar dentro de Zoho CRM');
+                });
+                return;
+            }
+            
+            // Inicializar el SDK de Zoho con manejo de errores
+            try {
+                ZOHO.embeddedApp.on("PageLoad", function() {
+                    console.log("Widget cargado");
+                    document.getElementById("checkRevistaBtn").addEventListener("click", checkRevistaDetails);
+                });
+                
+                ZOHO.embeddedApp.init().catch(function(error) {
+                    console.error("Error al inicializar el SDK:", error);
+                    alert("Error al inicializar el widget. Por favor, actualice la página e intente de nuevo.");
+                });
+            } catch (e) {
+                console.error("Error en la carga del widget:", e);
+                alert("Error en la carga del widget: " + e.message);
+            }
         });
         
         // Función para consultar los detalles de la revista
         function checkRevistaDetails() {
-            // Obtener el ID del registro actual
-            ZOHO.CRM.CONFIG.getCurrentRecord().then(function(recordData) {
-                if (recordData && recordData.data) {
-                    var currentRecord = recordData.data;
+            try {
+                // Obtener el ID del registro actual
+                ZOHO.CRM.CONFIG.getCurrentRecord().then(function(recordData) {
+                    console.log("Datos del registro:", recordData);
                     
-                    // Obtener el valor del campo "Nombre de Número revista" (ajusta el nombre si es necesario)
-                    var revistaId = currentRecord.Nombre_de_Numero_revista_id;
-                    
-                    if (!revistaId) {
-                        alert("No se ha seleccionado un número de revista");
-                        return;
-                    }
-                    
-                    // Consultar el módulo "Numeros Revistas" para obtener los datos
-                    ZOHO.CRM.API.getRecord({
-                        Entity: "Numeros_Revistas", 
-                        RecordID: revistaId
-                    })
-                    .then(function(response) {
-                        if (response.data && response.data.length > 0) {
-                            var revistaData = response.data[0];
-                            
-                            // Mostrar nombre
-                            document.getElementById("nombreRevista").textContent = revistaData.Name || "-";
-                            
-                            // Mostrar disponibilidad de Portada
-                            var portadaElement = document.getElementById("portadaValue");
-                            if (revistaData.Portada === true) {
-                                portadaElement.textContent = "Disponible";
-                                portadaElement.className = "available";
-                            } else {
-                                portadaElement.textContent = "No disponible";
-                                portadaElement.className = "not-available";
-                            }
-                            
-                            // Mostrar disponibilidad de Contraportada
-                            var contraportadaElement = document.getElementById("contraportadaValue");
-                            if (revistaData.Contraportada === true) {
-                                contraportadaElement.textContent = "Disponible";
-                                contraportadaElement.className = "available";
-                            } else {
-                                contraportadaElement.textContent = "No disponible";
-                                contraportadaElement.className = "not-available";
-                            }
-                            
-                            // Mostrar disponibilidad de Interior portada
-                            var interiorPortadaElement = document.getElementById("interiorPortadaValue");
-                            if (revistaData.Desplegable_interior_portada === true) {
-                                interiorPortadaElement.textContent = "Disponible";
-                                interiorPortadaElement.className = "available";
-                            } else {
-                                interiorPortadaElement.textContent = "No disponible";
-                                interiorPortadaElement.className = "not-available";
-                            }
-                            
-                            // Mostrar disponibilidad de Interior contraportada
-                            var interiorContraportadaElement = document.getElementById("interiorContraportadaValue");
-                            if (revistaData.Desplegable_interior_contraportada === true) {
-                                interiorContraportadaElement.textContent = "Disponible";
-                                interiorContraportadaElement.className = "available";
-                            } else {
-                                interiorContraportadaElement.textContent = "No disponible";
-                                interiorContraportadaElement.className = "not-available";
-                            }
-                            
-                            // Mostrar el div con los detalles
-                            document.getElementById("revistaDetails").style.display = "block";
-                        } else {
-                            alert("No se encontraron datos para este número de revista");
+                    if (recordData && recordData.data) {
+                        var currentRecord = recordData.data;
+                        
+                        // Obtener el valor del campo "Nombre de Número revista"
+                        var revistaId = currentRecord.Nombre_de_Numero_revista_id;
+                        console.log("ID de revista:", revistaId);
+                        
+                        if (!revistaId) {
+                            alert("No se ha seleccionado un número de revista");
+                            return;
                         }
-                    })
-                    .catch(function(error) {
-                        console.error("Error al obtener datos de la revista:", error);
-                        alert("Error al consultar los datos. Por favor, inténtalo de nuevo.");
-                    });
-                }
-            });
+                        
+                        // Consultar el módulo "Numeros Revistas" para obtener los datos
+                        ZOHO.CRM.API.getRecord({
+                            Entity: "Numeros_Revistas", 
+                            RecordID: revistaId
+                        })
+                        .then(function(response) {
+                            console.log("Respuesta de la API:", response);
+                            
+                            if (response.data && response.data.length > 0) {
+                                var revistaData = response.data[0];
+                                
+                                // Mostrar nombre
+                                document.getElementById("nombreRevista").textContent = revistaData.Name || "-";
+                                
+                                // Mostrar disponibilidad de Portada
+                                var portadaElement = document.getElementById("portadaValue");
+                                if (revistaData.Portada === true) {
+                                    portadaElement.textContent = "Disponible";
+                                    portadaElement.className = "available";
+                                } else {
+                                    portadaElement.textContent = "No disponible";
+                                    portadaElement.className = "not-available";
+                                }
+                                
+                                // Mostrar disponibilidad de Contraportada
+                                var contraportadaElement = document.getElementById("contraportadaValue");
+                                if (revistaData.Contraportada === true) {
+                                    contraportadaElement.textContent = "Disponible";
+                                    contraportadaElement.className = "available";
+                                } else {
+                                    contraportadaElement.textContent = "No disponible";
+                                    contraportadaElement.className = "not-available";
+                                }
+                                
+                                // Mostrar disponibilidad de Interior portada
+                                var interiorPortadaElement = document.getElementById("interiorPortadaValue");
+                                if (revistaData.Desplegable_interior_portada === true) {
+                                    interiorPortadaElement.textContent = "Disponible";
+                                    interiorPortadaElement.className = "available";
+                                } else {
+                                    interiorPortadaElement.textContent = "No disponible";
+                                    interiorPortadaElement.className = "not-available";
+                                }
+                                
+                                // Mostrar disponibilidad de Interior contraportada
+                                var interiorContraportadaElement = document.getElementById("interiorContraportadaValue");
+                                if (revistaData.Desplegable_interior_contraportada === true) {
+                                    interiorContraportadaElement.textContent = "Disponible";
+                                    interiorContraportadaElement.className = "available";
+                                } else {
+                                    interiorContraportadaElement.textContent = "No disponible";
+                                    interiorContraportadaElement.className = "not-available";
+                                }
+                                
+                                // Mostrar el div con los detalles
+                                document.getElementById("revistaDetails").style.display = "block";
+                            } else {
+                                alert("No se encontraron datos para este número de revista");
+                            }
+                        })
+                        .catch(function(error) {
+                            console.error("Error al obtener datos de la revista:", error);
+                            alert("Error al consultar los datos. Por favor, inténtalo de nuevo.");
+                        });
+                    }
+                }).catch(function(error) {
+                    console.error("Error al obtener el registro actual:", error);
+                    alert("Error al obtener información del presupuesto actual.");
+                });
+            } catch (e) {
+                console.error("Error al ejecutar la consulta:", e);
+                alert("Error al ejecutar la consulta: " + e.message);
+            }
         }
     </script>
 </body>
